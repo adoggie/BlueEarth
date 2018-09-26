@@ -13,7 +13,7 @@ from mantis.BlueEarth import model
 from mantis.BlueEarth.utils import RedisIdGenerator
 from mantis.fundamental.utils.importutils import import_class
 from mantis.BlueEarth.vendor.concox.gt03.message import MessageOnlineCommand
-from mantis.BlueEarth.types import PositionSource,AlarmSourceType
+from mantis.BlueEarth.types import PositionSource,AlarmSourceType,CoordinateType
 from mantis.fundamental.utils.timeutils import str_to_timestamp,timestamp_current
 
 class DataAdapter(object):
@@ -210,7 +210,7 @@ class DataAdapter(object):
         key = DevicePositionLastest.format(device_id=self.device_id)
         self.redis.hmset(key, data)
 
-    def convertLbsLocation(self,pos):
+    def _convertLbsLocation(self,pos):
         """lbs: MessageLbsStationExtension
             查询pos
             lbs_cell 表务必要建索引:
@@ -237,14 +237,35 @@ class DataAdapter(object):
         else:
             self.logger.error('lbs query fail.' + str(querycase))
 
+    def convertLbsLocation(self,pos):
+        """lbs: MessageLbsStationExtension
+            查询pos
+            lbs_cell 表务必要建索引:
+            use constant_reference
+            db.lbs_cell.createIndex({'mcc':1,'mnc':1,'lac':1,'cell':1});
+        """
+        from mantis.BlueEarth.tools.lbs import gd_convert_lbs_location
+
+        ak = self.service.getConfig().get('lbs_ak')
+        imei = self.device_id
+        bts = (pos.mcc,pos.mnc,pos.lac,pos.cell_id,pos.signal)
+        try:
+            data = gd_convert_lbs_location(ak,imei,bts)
+            object_assign(pos,data)
+            pos.position_source = PositionSource.LBS
+        except:
+            self.logger.error('lbs query fail.' )
+
+
     def processPosition(self,pos):
+        """逆地址转换"""
         from mantis.BlueEarth.tools.coord_transform import wgs84_to_bd09
         from mantis.BlueEarth.tools.geotools import geocoding_address
         lon,lat = wgs84_to_bd09(pos.lon,pos.lat)
         if not pos.address:
             pos.address = geocoding_address(lon,lat)
-        pos.lon_bd = lon
-        pos.lat_bd = lat
+        # pos.lon_bd = lon
+        # pos.lat_bd = lat
 
     def distribute_message(self,message):
         data = message.dict()

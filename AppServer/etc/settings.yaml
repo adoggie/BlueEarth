@@ -136,22 +136,91 @@ services:
                 name: 'orders'   # function name
                 methods: 'GET'
           - name: 'api'
-            url: 'api'
+            url: 'api/m'
             routes:
-              - url: '/command'           # 发送设备命令
-                name: 'sendCommand'       #
+              - url: '/ticket'           # 用户微信登录
+                name: 'get_ticket'       #
                 methods: 'POST'
-              - url: '/login'  # 获取用户授权令牌
-                name: 'login'
+
+              - url: '/device'        # 用户添加设备
+                name: 'add_device'
                 methods: 'POST'
-              - url: '/device/list'  # 列出查询的多个设备
-                name: 'getDeviceList'
+
+              - url: '/device'          # 更新设备信息
+                name: 'update_device'
+                methods: 'PUT'
+
+              - url: '/device'        # 删除设备
+                name: 'remove_device'
+                methods: 'DELETE'
+
+              - url: '/device'            # 获取设备详情
+                name: 'get_device_info'
                 methods: 'GET'
-              - url: '/device/active'  # 激活某个设备
-                name: 'deviceActive'
+
+              - url: '/device/list'            # 获取设备列表详情
+                name: 'get_device_list'
+                methods: 'GET'
+
+              - url: '/share-device'            # 创建共享设备
+                name: 'create_share_device'
                 methods: 'POST'
 
+              - url: '/share-device'            # 删除共享设备
+                name: 'remove_share_device'
+                methods: 'DELETE'
 
+              - url: '/share-device/take'            # 用户添加共享设备
+                name: 'take_share_device'
+                methods: 'POST'
+
+              - url: '/share-device'            # 用户查询共享设备
+                name: 'get_share_device_info'
+                methods: 'GET'
+
+              - url: '/share-device/list'            # 用户查询共享设备
+                name: 'get_share_device_list'
+                methods: 'GET'
+
+              - url: '/device/pos/last'            # 用户查询位置信息
+                name: 'get_last_position'
+                methods: 'GET'
+
+              - url: '/device/pos/trace'            # 用户查询共享设备
+                name: 'get_position_path'
+                methods: 'GET'
+
+              - url: '/device/config'            # 用户查询设备配置信息
+                name: 'get_device_config'
+                methods: 'GET'
+
+              - url: '/device/config'            # 用户设置设备配置信息
+                name: 'set_device_config'
+                methods: 'PUT'
+
+              - url: '/device/fence'            # 用户设置设备配置信息
+                name: 'get_device_fence'
+                methods: 'GET'
+
+              - url: '/device/fence'            # 用户设置围栏信息
+                name: 'set_device_fence'
+                methods: 'PUT'
+
+              - url: '/command/audio/start'            # 用户设置设备配置信息
+                name: 'cmd_start_audio_record'
+                methods: 'POST'
+
+              - url: '/command/position-now-gps'            # 用户设置设备配置信息
+                name: 'cmd_position_now_gps'
+                methods: 'GET,POST'
+
+              - url: '/command/position-now-lbs'            # 用户设置设备配置信息
+                name: 'cmd_position_now_lbs'
+                methods: 'GET,POST'
+
+              - url: '/command/position-now'            # 用户设置设备配置信息
+                name: 'cmd_position_now'
+                methods: 'GET,POST'
 
 
   - name:       'main'
@@ -172,6 +241,10 @@ services:
         channels:
           - 'redis/trade.strategy.log/queue'
           - 'redis/trade.strategy.log.pub/pubsub'
+
+    command_controllers:
+      - name: 'gt03'
+        class: 'mantis.BlueEarth.vendor.concox.gt03.command.CommandController'
 
     servers:
       - name: 'concox-server'

@@ -164,7 +164,8 @@ services:
         channels:
           - 'redis/trade.strategy.log/queue'
           - 'redis/trade.strategy.log.pub/pubsub'
-
+    lbs_ak: '0b7d114fdc4eb50079408292b7249015'
+    lbs_web_ak: 'c0c74a14f8b411cc5433e8946bf82377'
     servers:
       - name: 'concox-server'
         host: ''

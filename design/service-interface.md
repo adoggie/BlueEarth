@@ -860,7 +860,7 @@ Response:
 ##### Request
 <pre>
 URL: /api/m/device/config
-Medthod: GET
+Medthod: PUT
 Headers: 
   - token : 用户令牌
 Character Encoding: utf-8
@@ -1045,7 +1045,7 @@ Response:
 
 ##### Request
 <pre>
-URL: /api/m/command/audio-record
+URL: /api/m/command/audio/start
 Medthod: POST
 Headers: 
   - token : 用户令牌
@@ -1084,16 +1084,59 @@ Response:
 </pre>	
 
 ##### Remarks
+
+
+## 5.2 立即定位
+#### 名称:
+> positionNow(device_id)
+
+#### 描述:
+> 要求设备立即开启定位功能
+
+##### Request
+<pre>
+URL: /api/m/command/position-now 
+(position-now-gps/position-now-lbs)
+
+Medthod: POST
+Headers: 
+  - token : 用户令牌
+Character Encoding: utf-8
+Content-Type: x-www-form-urlencoded
+Query Parameters:
+    - device_id  设备编号
+    * 可选参数
+</pre>
+	   				
+##### Response
+<pre>
+Headers:
+Character Encoding: utf-8
+Content-Type: application/json
+Data: 
+  - status	状态码 0 : succ; others : error  
+  - errcode	错误码
+  - errmsg	错误信息
+  - result 
+        
 </pre>
 
+##### Examples:
+<pre>
+Request:
+  /api/m/command/audio-record
+  - token: oiwurwurioqweuirqwerjqwewriu
+  device_id = 86091233121
+Response:
+  { 
+    status:0,
+    result: 
+  }		
+</pre>	
+
+##### Remarks
 
 
-startAudioRecord(device_id,duration)  开始录音
-getLastAudioRecord(device_id)       获取最近的录音记录
-getAudioRecordList(device_id,start,end) 获取设备的录音记录
-
-
-</pre>
 
 
 # 错误表
