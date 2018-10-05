@@ -115,7 +115,7 @@ services:
     http:
 #      host : '172.16.109.237'
       host : '127.0.0.1'
-      port : 19001
+      port : 25100
       threaded: false
       debug: true
       websocket: true
@@ -140,7 +140,7 @@ services:
             routes:
               - url: '/ticket'           # 用户微信登录
                 name: 'get_ticket'       #
-                methods: 'POST'
+                methods: 'POST,GET'
 
               - url: '/device'        # 用户添加设备
                 name: 'add_device'
@@ -222,6 +222,22 @@ services:
                 name: 'cmd_position_now'
                 methods: 'GET,POST'
 
+              - url: '/command/shutdown'            # 用户设置设备配置信息
+                name: 'cmd_shutdown'
+                methods: 'GET,POST'
+
+              - url: '/command/reboot'            # 用户设置设备配置信息
+                name: 'cmd_reboot'
+                methods: 'GET,POST'
+
+              - url: '/audio/list'            #
+                name: 'get_audio_record_list'
+                methods: 'GET'
+
+              - url: '/audio'            #  /audio/?audio_id=1123123123
+                name: 'get_audio_content'
+                methods: 'GET'
+
 
   - name:       'main'
     id:     'location-adapter'
@@ -246,15 +262,7 @@ services:
       - name: 'gt03'
         class: 'mantis.BlueEarth.vendor.concox.gt03.command.CommandController'
 
-    servers:
-      - name: 'concox-server'
-        host: ''
-        port: 25002
-        accumulator:
-          class: 'vendor.concox.accumulator.DataAccumulator'
-
-        handler:
-          class: 'handlers.concox.MessageHandler'
+    location_server_api_command: 'http://localhost:19002/api/command'
 
 
 

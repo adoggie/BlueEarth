@@ -40,6 +40,7 @@ class DataAdapter(object):
         self.command_controller = None
         self.queue = Queue()
         self.running = True
+        self.peer_address = ''
 
     def next_packet_sequence(self):
         self.packet_sequence+=1
@@ -60,7 +61,8 @@ class DataAdapter(object):
         if message isinstance MessageLogin:
             self.conn.client_id.unique_id = message.imei
         """
-        print message.__class__
+        self.logger.debug( str( message.__class__ ))
+        self.logger.debug('message type:0x{:02x}'.format(message.Type.value))
         if not self.active:
             if isinstance(message, MessageLogin):
                 self.device_id = message.device_id
@@ -73,23 +75,24 @@ class DataAdapter(object):
         message.device_id = self.device_id
         message.device_type = self.device_type
 
+        self.distribute_message(message)
+
         if isinstance(message,MessageHeartBeat):
             self.handle_heartbeat(message)
         if isinstance(message,MessageAdjustTime):
             bytes = message.response()
             self.conn.sendData(bytes)
+        if isinstance(message, MessageOnlineCommand):
+            self.handle_online_command_report(message)
 
         # 处理位置信息
-        if isinstance(message,(MessageGpsLocation,MessageLbsStationExtension)):
-            self.handle_location(message)
-        elif isinstance(message,MessageAlarmData):
-            self.handle_gps_alarm(message)
-        elif isinstance(message,MessageLbsAlarmData):
-            self.handle_lbs_alarm(message)
+        # if isinstance(message,(MessageGpsLocation,MessageLbsStationExtension)):
+        #     self.handle_location(message)
+        # elif isinstance(message,MessageAlarmData):
+        #     self.handle_gps_alarm(message)
+        # elif isinstance(message,MessageLbsAlarmData):
+        #     self.handle_lbs_alarm(message)
 
-        elif isinstance(message,MessageOnlineCommand):
-            self.handle_online_command_report(message)
-        self.distribute_message(message)
 
     def handle_online_command_report(self,message):
         data = message.parseContent()
@@ -102,11 +105,15 @@ class DataAdapter(object):
                 fence_data[name] = v
             else:
                 config[k] = v
-        fence = model.Fence()
+        fence = model.Fence.get_or_new(device_id=self.device_id)
         object_assign(fence,fence_data)
+        fence.device_id = self.device_id
+        fence.device_type = self.device_type
 
-        devcfg = model.DeviceConfig()
+        devcfg = model.DeviceConfig.get_or_new(device_id=self.device_id)
         object_assign(devcfg,config)
+        devcfg.device_id = self.device_id
+        devcfg.device_type = self.device_type
 
         fence.save()
         devcfg.save()
@@ -194,16 +201,26 @@ class DataAdapter(object):
         data = message.dict()
         object_assign(pos, data)
 
-        if isinstance(message,MessageGpsLocation):
+        self.handle_location_gps(message,pos)
+        self.handle_location_lbs(message,pos)
+        self.handle_location_wifi(message,pos)
+
+        # 有效的经纬度坐标才进行保存， lbs 上行的数据存在无法匹配的情况
+        self.savePosition(pos)
+
+    def handle_location_gps(self,message,pos):
+        if isinstance(message, MessageGpsLocation):
             pos.position_source = PositionSource.GPS
             pos.timestamp = str_to_timestamp(message.location.ymdhms)
-        elif isinstance(message,MessageLbsStationExtension):
+
+    def handle_location_lbs(self,message,pos):
+        if isinstance(message,MessageLbsStationExtension):
             pos.position_source = PositionSource.LBS
             pos.timestamp = str_to_timestamp(message.ymdhms)
             self.convertLbsLocation(pos)
 
-        # 有效的经纬度坐标才进行保存， lbs 上行的数据存在无法匹配的情况
-        self.savePosition(pos)
+    def handle_location_wifi(self,message,pos):
+        pass
 
     def update_device_in_cache(self,data):
         data['update_time'] = timestamp_current()
@@ -313,11 +330,13 @@ class DataAdapter(object):
     def close(self):
         pass
 
-    def onConnected(self,sock_con,*args):
+    def onConnected(self,sock_con,address,*args):
         """连接上来"""
         self.logger.debug('device connected . {}'.format(str(args)))
         self.setConnection(sock_con)
-        self.make_rawfile()
+        self.peer_address = address # 连接上来的对方地址
+
+        # self.make_rawfile()
 
     def make_rawfile(self):
         fmt = '%Y%m%d_%H%M%S.%f'
@@ -329,7 +348,7 @@ class DataAdapter(object):
     def onDisconnected(self):
         self.logger.debug('device  disconnected. {}'.format(self.device_id))
         self.active = False
-        self.raw_file.close()
+        # self.raw_file.close()
         self.service.deviceOffline(self)
         self.running = False
 
@@ -337,14 +356,27 @@ class DataAdapter(object):
         dump = ' '.join(map(lambda _:'%02x'%_, map(ord, bytes)))
         return dump
 
+    def dump_hex_data(self,data):
+        fmt = '%Y%m%d_%H%M%S'
+        ts = time.time()
+        times = time.strftime(fmt, time.localtime(ts))
+
+        name = 'data_{}.hex'.format(self.device_type)
+        name = os.path.join(instance.getDataPath(), name)
+
+        fp = open(name, 'a+')
+        fp.write(times +','+ data + '\n')
+        fp.close()
+
     def onData(self,bytes):
         """ raw data """
         self.logger.debug("device data retrieve in .")
         dump = self.hex_dump(bytes)
         self.logger.debug("<< "+dump)
 
-        self.raw_file.write(bytes)
-        self.raw_file.flush()
+        self.dump_hex_data(dump)
+        # self.raw_file.write(bytes)
+        # self.raw_file.flush()
         messages = self.accumulator.enqueue(bytes)
         for message in messages:
             # self.handle(message)
@@ -362,6 +394,11 @@ class DataAdapter(object):
             self.obj = obj
         else:
             self.logger.debug('device: {} not found in database.'.format(self.device_id))
+            self.obj = model.Device()
+            self.obj.device_id = self.device_id
+            self.obj.name = self.device_id
+            self.obj.device_type = self.device_type
+            self.obj.save()
 
         self.service.deviceOnline(self)
 

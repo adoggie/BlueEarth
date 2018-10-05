@@ -1,7 +1,7 @@
 #coding:utf-8
 
 
-
+import base64
 from flask import make_response,request,g
 from functools import wraps, update_wrapper
 from datetime import datetime
@@ -48,7 +48,8 @@ def request_log(view):
 def token_decode(token):
     auth = None
     try:
-        data = json.loads(token)
+        data = base64.b64decode(token)
+        data = json.loads(data)
 
         auth = AuthToken()
         object_assign(auth,data)
@@ -64,7 +65,7 @@ def token_encode(data):
         _dict = data
     else:
         _dict  =data.__dict__
-    return json.dumps(_dict)
+    return base64.b64encode(json.dumps(_dict))
 
 
 class AuthToken(object):

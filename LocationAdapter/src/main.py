@@ -8,7 +8,7 @@ from mantis.trade.service import TradeService
 from optparse import OptionParser
 from server import Server
 from mantis.BlueEarth.vendor.concox.gt03.packet import NetWorkPacketAllocator
-from mantis.BlueEarth.vendor.concox.gt03.message import MessageOnlineCommandAllocator
+# from mantis.BlueEarth.vendor.concox.gt03.message import MessageOnlineCommandAllocator
 from mantis.BlueEarth.constants import *
 from mantis.BlueEarth import model
 from mantis.BlueEarth.utils import sendCommand
@@ -25,6 +25,9 @@ class MainService(TradeService):
         # self.parseOptions()
         super(MainService,self).init(cfgs)
         for svrcfg in self.cfgs.get('servers',[]):
+            if not svrcfg.get('enable',False):
+                self.logger.info("server:{} skipped..".format(svrcfg.get('name')))
+                continue
             server = Server().init(svrcfg)
             self.servers[server.name] = server
         # generator = RedisIdGenerator().init(DeviceSequence)
@@ -86,7 +89,8 @@ class MainService(TradeService):
         if self.adapters.has_key(adapter.device_id):
             del self.adapters[adapter.device_id]
 
-    def sendCommand(self,device_id,command):
+    def sendCommand(self,device_id,command,online=False):
+        """将命令推入发送队列，待设备上线，统一发送"""
         device = model.Device.get(device_id=device_id)
         if not device:
             self.logger.error('device_id:{} is not existed.'.format(device_id))
@@ -96,6 +100,10 @@ class MainService(TradeService):
         # if not adapter:
         #     self.logger.error('Method:sendCommand Detail: device_id({}) is not found.'.format(device_id))
         #     return False
+        if online: # 必须在线发送
+            if not self.adapters.has_key(device_id):
+                self.logger.debug('sendCommand Error,device not online. {}'.format(device_id))
+                return
         sendCommand(device_id,device_type,command)
         return True
 

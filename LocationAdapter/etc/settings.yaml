@@ -166,18 +166,44 @@ services:
           - 'redis/trade.strategy.log.pub/pubsub'
     lbs_ak: '0b7d114fdc4eb50079408292b7249015'
     lbs_web_ak: 'c0c74a14f8b411cc5433e8946bf82377'
+    audio_path: '/tmp/audio'
     servers:
-      - name: 'concox-server'
+      - name: 'concox-server-gt03'
+        enable: true
         host: ''
         port: 25002
         accumulator:
           class: 'mantis.BlueEarth.vendor.concox.gt03.accumulator.DataAccumulator'
-
         handler:
-          class: 'handlers.concox.DataAdapter'
+          class: 'handlers.concox_gt03.DataAdapter'
           device_type: 'gt03'
           sequence_key: 'blue_earth.device.sequence.gt03'
           command_controller: 'mantis.BlueEarth.vendor.concox.gt03.command.CommandController'
+
+      - name: 'concox-server-gt310'
+        enable: true
+        host: ''
+        port: 25003
+        accumulator:
+          class: 'mantis.BlueEarth.vendor.concox.gt310.accumulator.DataAccumulator'
+
+        handler:
+          class: 'handlers.concox_gt310.DataAdapter'
+          device_type: 'gt310'
+          sequence_key: 'blue_earth.device.sequence.gt310'
+          command_controller: 'mantis.BlueEarth.vendor.concox.gt310.command.CommandController'
+
+      - name: 'concox-server-ev25'
+        enable: true
+        host: ''
+        port: 25004
+        accumulator:
+          class: 'mantis.BlueEarth.vendor.concox.ev25.accumulator.DataAccumulator'
+        handler:
+          class: 'handlers.concox_ev25.DataAdapter'
+          device_type: 'ev25'
+          sequence_key: 'blue_earth.device.sequence.ev25'
+          command_controller: 'mantis.BlueEarth.vendor.concox.ev25.command.CommandController'
 
 
 

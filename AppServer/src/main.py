@@ -6,9 +6,6 @@ from mantis.fundamental.utils.useful import singleton
 from mantis.fundamental.application.app import instance
 from mantis.trade.service import TradeService,TradeFrontServiceTraits,ServiceType,ServiceCommonProperty
 from optparse import OptionParser
-from server import Server
-from vendor.concox.packet import NetWorkPacketAllocator
-from vendor.concox.message import MessageOnlineCommandAllocator
 from mantis.fundamental.utils.importutils import import_class
 
 class MainService(TradeService):
@@ -72,3 +69,7 @@ class MainService(TradeService):
 
     def getCommandController(self,name):
         return self.command_controllers.get(name)
+
+    def get_database(self):
+        conn = instance.datasourceManager.get('mongodb').conn
+        return conn['BlueEarth']

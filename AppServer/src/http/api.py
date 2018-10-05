@@ -3,9 +3,14 @@
 import json
 from flask import Flask,request,g
 from flask import Response
+import requests
+import base64
+from StringIO import StringIO
 
 from flask import render_template
 from mantis.fundamental.application.app import  instance
+from mantis.fundamental.utils.useful import cleaned_json_data
+
 from mantis.fundamental.flask.webapi import ErrorReturn,CR
 from mantis.fundamental.utils.timeutils import timestamp_current
 from mantis.BlueEarth import model
@@ -21,6 +26,8 @@ def get_ticket():
     """上传微信用wx_id,获取登录token"""
     main = instance.serviceManager.get('main')
     account = request.values.get('wx_id')
+    if not account:
+        return ErrorReturn(ErrorDefs.UserNotExist).response
     user = model.User.get_or_new(platform='wx',account=account)
     user.platform = 'wx'
     user.last_login = timestamp_current()
@@ -46,18 +53,20 @@ def add_device():
     if not device:
         return ErrorReturn(ErrorDefs.ObjectNotExist).response
 
+    if password != device.password:
+        return ErrorReturn(ErrorDefs.PasswordError).response
     # 检测设备是否已经添加了
     rel = model.DeviceUserRelation.get(user_id= str(user.id),device_id=device_id )
     if rel:
         return CR(result=str(rel.id)).response
 
-    if password != device.password:
-        return ErrorReturn(ErrorDefs.PasswordError).response
+
 
     rel = model.DeviceUserRelation()
     rel.user_id = user.id
     rel.device_id = device_id
     rel.update_time = timestamp_current()
+    rel.device_type = device.device_type
     rel.save()
     return CR(result=rel.id).response
 
@@ -86,7 +95,12 @@ def update_device():
         if name:
             rel.save()
         return CR().response
+
+    if name:
+        rel.save()
+
     kwargs ={}
+
     if password:
         kwargs['password'] = password
     if mobile:
@@ -96,7 +110,7 @@ def update_device():
     if image:
         kwargs['image'] = image
 
-    rel.update(**kwargs)
+    device.update(**kwargs)
 
     return CR().response
 
@@ -151,12 +165,13 @@ def get_device_info():
 def get_device_list():
     """查询设备列表"""
     user = g.user
-    rs = model.DeviceUserRelation.collection().find({'user_id':user._id})
+    rs = model.DeviceUserRelation.collection().find({'user_id':user.id})
     result = []
     for r in rs:
         rel = model.DeviceUserRelation()
         rel.assign(r)
         device = model.Device.get(device_id=r['device_id'])
+        data = _get_last_position(device.device_id)
         obj = dict(
             device_id= device.device_id,
             device_type=device.device_type,
@@ -169,7 +184,8 @@ def get_device_list():
             update_time=rel.update_time,
             is_share_device=rel.is_share_device,
             share_user_id=rel.share_user_id,
-            share_device_link=rel.share_device_link
+            share_device_link=rel.share_device_link,
+            position = data
         )
         result.append(obj)
     return CR(result=result).response
@@ -318,6 +334,22 @@ def get_share_device_list():
     return CR(result=result).response
 
 
+def _get_last_position(device_id):
+    from mantis.BlueEarth.types import PositionSource
+    name = constants.DevicePositionLastest.format(device_id=device_id)
+    redis = instance.datasourceManager.get('redis').conn
+    data = redis.hgetall(name)
+    data['locate_mode'] = '/'
+    ps = int(data.get('position_source',0))
+    if ps == PositionSource.GPS:
+        data['locate_mode'] ='GPS'
+    if ps == PositionSource.LBS:
+        data['locate_mode'] ='LBS'
+    if ps == PositionSource.WIFI:
+        data['locate_mode'] ='WIFI'
+
+
+    return data
 
 @login_check
 def get_last_position():
@@ -325,9 +357,7 @@ def get_last_position():
     """
     user = g.user
     device_id = request.values.get('device_id')
-    name = constants.DevicePositionLastest.format(device_id = device_id)
-    redis = instance.serviceManager.get('redis')
-    data = redis.hgetall(name)
+    data = _get_last_position(device_id)
     pos = model.Position()
     object_assign(pos,data)
     return CR(result=pos.__dict__).response
@@ -536,6 +566,7 @@ def cmd_start_audio_record():
     cc = main.getCommandController(device.device_type)
     cmd = cc.start_audio_record()
     main.sendCommand(device_id, cmd)
+    return CR().response
 
 @login_check
 def cmd_position_now_gps():
@@ -548,6 +579,7 @@ def cmd_position_now_gps():
     cc = main.getCommandController(device.device_type)
     cmd = cc.positionNowGps()
     main.sendCommand(device_id, cmd)
+    return CR().response
 
 @login_check
 def cmd_position_now_lbs():
@@ -560,6 +592,7 @@ def cmd_position_now_lbs():
     cc = main.getCommandController(device.device_type)
     cmd = cc.positionNowLbs()
     main.sendCommand(device_id, cmd)
+    return CR().response
 
 @login_check
 def cmd_position_now():
@@ -574,3 +607,62 @@ def cmd_position_now():
     main.sendCommand(device_id, cmd)
     cmd = cc.positionNowGps()
     main.sendCommand(device_id, cmd)
+    return CR().response
+
+@login_check
+def cmd_shutdown():
+    """此命令将被立即执行，不能进入队列，设备不在线就丢弃"""
+    user = g.user
+    device_id = request.values.get('device_id')
+    main = instance.serviceManager.get('main')
+    url = main.getConfig().get('location_server_api_command')
+    device = model.Device.get(device_id=device_id)
+    cc = main.getCommandController(device.device_type)
+    cmd = cc.shutdown()
+    params = dict(device_id=device_id,online=True,command=cmd)
+    ret = requests.post(url,params)
+    print ret.json()
+    return CR().response
+
+
+@login_check
+def cmd_reboot():
+    """此命令将被立即执行，不能进入队列，设备不在线就丢弃"""
+    user = g.user
+    device_id = request.values.get('device_id')
+
+
+@login_check
+def get_audio_record_list():
+    """获取录音记录列表"""
+    user = g.user
+    device_id = request.values.get('device_id')
+    limit = request.values.get('limit')
+
+    coll = model.AudioRecord.collection()
+    if not limit:
+        limit = 30
+    rs = coll.find({'device_id':device_id}).sort('report_time',-1).limit(limit)
+
+    result = cleaned_json_data(list(rs),('content',))  # 不传输音频文件内容
+    return CR(result=result).response
+
+@login_check
+def get_audio_content():
+    """获取录音记录
+    """
+    user = g.user
+    # device_id = request.args.get('device_id')
+    audio_id = request.args.get('audio_id')
+    audio = model.AudioRecord.get(_id=ObjectId(audio_id))
+
+    def generate():
+        data = base64.b64decode(audio.content)
+        stream = StringIO(data)
+        data = stream.read(1024)
+        while data:
+            yield data
+            data = stream.read(1024)
+
+    return Response(generate(), mimetype="audio/mpeg3")
+

@@ -28,17 +28,20 @@ def get_active_devices():
     return cr.response
 
 def send_command():
-    """获取在线设备"""
+    """获取在线设备,可控制是否设备离线发送还是在线发送"""
     main = instance.serviceManager.get('main')
     cr  =CR()
     print request.query_string
     device_id = request.values.get('device_id')
     device_command = request.values.get('command')
+    online = request.values.get('online','false')
     if not device_id or not device_command:
         print 'device_id or command is null.'
         return cr.response
-
-    main.sendCommand(device_id,device_command)
+    online_send = False
+    if online.lower() == 'true':
+        online_send = True
+    main.sendCommand(device_id,device_command,online_send)
     return cr.response
 
 

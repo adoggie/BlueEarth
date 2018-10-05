@@ -58,7 +58,8 @@ class SocketConnection(object):
 			try:
 				self.consumer.onData(d)
 			except:
-				traceback.print_exc()
+				instance.getLogger().error(traceback.format_exc())
+				# traceback.print_exc()
 		instance.getLogger().debug( 'socket disconnected!' )
 		self.sock = None
 
@@ -115,7 +116,7 @@ class Server(object):
 		self.addConnection(conn)
 		# handler.setConnection(conn)
 		handler.setAccumulator(acc)
-		handler.onConnected(conn)
+		handler.onConnected(conn,address)
 		conn.recv()
 		self.removeConnection(conn)
 		handler.onDisconnected()
