@@ -114,7 +114,7 @@ services:
       SEND_FILE_MAX_AGE_DEFAULT: 0
     http:
 #      host : '172.16.109.237'
-      host : '127.0.0.1'
+      host : ''
       port : 19002
       threaded: false
       debug: true
@@ -167,6 +167,7 @@ services:
     lbs_ak: '0b7d114fdc4eb50079408292b7249015'
     lbs_web_ak: 'c0c74a14f8b411cc5433e8946bf82377'
     audio_path: '/tmp/audio'
+    access_command_url: 'http://localhost:19002/api/command'
     servers:
       - name: 'concox-server-gt03'
         enable: true
@@ -181,7 +182,7 @@ services:
           command_controller: 'mantis.BlueEarth.vendor.concox.gt03.command.CommandController'
 
       - name: 'concox-server-gt310'
-        enable: true
+        enable: ture
         host: ''
         port: 25003
         accumulator:

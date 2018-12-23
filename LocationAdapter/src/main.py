@@ -86,8 +86,13 @@ class MainService(TradeService):
         self.adapters[adatper.device_id] = adatper
 
     def deviceOffline(self,adapter):
-        if self.adapters.has_key(adapter.device_id):
-            del self.adapters[adapter.device_id]
+        for device_id,item in self.adapters.items():
+            if item == adapter:
+                del self.adapters[device_id]
+                break
+
+        # if self.adapters.has_key(adapter.device_id):
+        #     del self.adapters[adapter.device_id]
 
     def sendCommand(self,device_id,command,online=False):
         """将命令推入发送队列，待设备上线，统一发送"""

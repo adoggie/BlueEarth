@@ -7,6 +7,7 @@ from mantis.fundamental.application.app import instance
 from mantis.trade.service import TradeService,TradeFrontServiceTraits,ServiceType,ServiceCommonProperty
 from optparse import OptionParser
 from mantis.fundamental.utils.importutils import import_class
+from mantis.BlueEarth.utils import sendCommand
 
 class MainService(TradeService):
     def __init__(self,name):
@@ -28,9 +29,10 @@ class MainService(TradeService):
         self.logger.addHandler(handler)
 
     def start(self,block=True):
-        TradeService.start(self)
-        for server in self.servers:
-            server.start()
+        # TradeService.start(self)
+        # for server in self.servers:
+        #     server.start()
+        self.initCommandController()
 
     def stop(self):
         TradeService.stop(self)
@@ -45,14 +47,13 @@ class MainService(TradeService):
         在线设备即刻发送，离线设备寄存发送命令
 
         """
-        key = 'deivce.command.queue.{}'.format(device_id)
-        redis = instance.datasourceManager.get('redis').conn
-        data = ''
-        if isinstance(command,str):
-            data = command
-        else:
-            data = command.bytes()
-        redis.rpush(device_id,data)
+        from mantis.BlueEarth import model
+        device = model.Device.get(device_id=device_id)
+        if not device:
+            self.logger.error('device_id:{} is not existed.'.format(device_id))
+            return
+        device_type = device.device_type
+        sendCommand(device_id,device_type,command)
 
     def sendDownStreamData(self, device_id,data):
         key = 'deivce.command.queue.{}'.format(device_id)
@@ -73,3 +74,9 @@ class MainService(TradeService):
     def get_database(self):
         conn = instance.datasourceManager.get('mongodb').conn
         return conn['BlueEarth']
+
+    def sendDevicePassword(self,phone,device_id,password,reason=''):
+        """用户在找回密码或注册设备时请求密码查询返回"""
+        import sms
+        # from mantis.BlueEarth.utils import mak
+        return sms.send_sms(phone,'shyg','find_device_password',code=password)

@@ -34,6 +34,9 @@ class DataAdapter(concox.DataAdapter):
             pos.position_source = PositionSource.GPS
             pos.timestamp = str_to_timestamp(message.location.ymdhms)
             if pos.lat == 0:  # 如果gps位置无效，则通过lbs定位
+                # print 'Invalid Lat/Lon.', pos.lat,pos.lon
+                self.logger.info('{} {} Gps Location Invalid, Try to LBS Calc..'.format(self.device_id,self.device_type))
+                self.logger.info(str(message.dict()))
                 self.convertLbsLocation(pos)
 
     def handle_location_lbs(self,message,pos):

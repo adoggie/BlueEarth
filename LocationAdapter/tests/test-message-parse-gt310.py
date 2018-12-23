@@ -21,6 +21,8 @@ data_command_response ='79 79 00 87 94 04 41 4c 4d 31 3d 44 35 3b 41 4c 4d 32 3d
 data_wifi = ' 78 78 56 2c 12 09 1c 02 02 36 01 cc 00 18 0b 00 67 0e 34 18 0b 00 67 37 2b 18 0b 00 66 c4 24 18 0d 00 66 56 1a 18 b9 00 67 b4 16 18 0b 00 66 9d 16 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 26 ec 6c 9f 9b ba fb 2d a0 a3 3b a3 3d 80 45 50 fa 84 78 b3 62 55 00 af 4b eb 0d 0a 78 78 56 2c 12 09 1c 02 05 36 01 cc 00 18 0b 00 67 0e 34 18 0b 00 67 37 2a 18 0b 00 66 c4 25 18 0d 00 66 56 1b 18 b9 00 67 b4 16 18 0b 00 66 9d 14 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 28 ec 6c 9f 9b bb 07 2d a0 a3 3b a3 3d 80 43 02 fa 84 78 b3 62 54 00 d4 91 c3 0d 0a 78 78 56 2c 12 09 1c 02 08 29 01 cc 00 18 0b 00 67 0e 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 25 ec 6c 9f 9b bb 04 2e a0 a3 3b a3 3d 80 47 50 fa 84 78 b3 62 56 00 05 2d 24 0d 0a 78 78 56 2c 12 09 1c 02 0b 29 01 cc 00 18 0b 00 67 0e 34 18 0b 00 67 37 2a 18 0d 00 66 56 1a 18 0b 00 66 9d 14 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 28 ec 6c 9f 9b bb 04 2f a0 a3 3b a3 3d 80 49 50 fa 84 78 b3 88 4f 00 29 a9 6c 0d 0a 78 78 5d 2c 12 09 1c 02 0e 29 01 cc 00 18 0b 00 67 0e 34 18 0b 00 67 37 31 18 0d 00 66 56 1a 18 b9 00 67 b4 18 18 0b 00 66 9d 15 18 b9 00 67 7a 14 00 00 00 00 00 00 ff 05 ec 6c 9f aa 1a de 28 ec 6c 9f 9b ba fe 2f a0 a3 3b a3 3d 80 48 02 fa 84 78 b3 88 51 50 fa 84 74 f3 18 54 00 4a 41 1d 0d 0a 78 78 56 2c 12 09 1c 02 11 29 01 cc 00 18 0b 00 67 0e 33 18 0b 00 67 37 30 18 0b 00 66 c4 20 18 0d 00 66 56 1c 18 0b 00 66 9d 15 00 00 00 00 00 00 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 26 ec 6c 9f 9b ba fe 2c a0 a3 3b a3 3d 80 42 02 fa 84 78 b3 88 53 00 6e 73 07 0d 0a 78 78 56 2c 12 09 1c 02 14 29 01 cc 00 18 0b 00 67 0e 33 18 0b 00 67 37 32 18 0d 00 66 56 1e 18 0b 00 66 c4 1c 18 b9 00 67 e6 17 18 b9 00 67 7a 16 18 0b 00 66 9d 14 ff 04 ec 6c 9f aa 1a de 27 ec 6c 9f 9b bb 07 2c a0 a3 3b a3 3d 80 44 02 fa 84 78 b3 88 4f 00 90 b3 d0 0d 0a 78 78 5d 2c 12 09 1c 02 17 29 01 cc 00 18 0b 00 67 0e 35 18 0b 00 67 37 32 18 0d 00 66 56 1e 18 b9 00 67 e6 17 18 0b 00 66 9d 15 00 00 00 00 00 00 00 00 00 00 00 00 ff 05 ec 6c 9f aa 1a de 28 ec 6c 9f 9b ba fb 2c a0 a3 3b a3 3d 80 43 02 fa 84 78 b3 88 50 ec 6c 9f 9c bd 86 52 00 b4 c7 2f 0d 0a 78 78 4f 2c 12 09 1c 02 1a 29 01 cc 00 18 0b 00 67 0e 34 18 0b 00 67 37 32 18 0d 00 66 56 1d 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff 03 ec 6c 9f 9b bb 04 2c a0 a3 3b a3 3d 80 40 50 fa 84 78 b3 62 57 00 d8 de 8c 0d 0a 78 78 56 2c 12 09 1c 02 1d 16 01 cc 00 18 0b 00 67 0e 34 18 0d 00 66 56 1c 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 29 ec 6c 9f 9b bb 04 2c a0 a3 3b a3 3d 80 42 02 fa 84 78 b3 88 50 00 05 f9 c6 0d 0a'
 # 460	1	9649	28657	23.1067600250244	114.416069030762	广东省惠州市惠城区江北街道水北
 
+# 单个wifi包
+data_wifi = ' 78 78 56 2c 12 09 1c 02 02 36 01 cc 00 18 0b 00 67 0e 34 18 0b 00 67 37 2b 18 0b 00 66 c4 24 18 0d 00 66 56 1a 18 b9 00 67 b4 16 18 0b 00 66 9d 16 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 26 ec 6c 9f 9b ba fb 2d a0 a3 3b a3 3d 80 45 50 fa 84 78 b3 62 55 00 af 4b eb 0d 0a'
 
 data_audio = """
 20181002_111038,79 79 04 01 8d 00 00 00 1e 28 00 dc 45 00 00 00 00 03 e8 23 21 41 4d 52 0a 0c 0a 3c 3f 96 d9 83 67 e9 46 8e a2 45 32 0c 0a 3c 3f 96 d9 83 67 e9 46 8e a2 45 32 0c 0a 3c 3f 96 d9 83 67 e9 46 8e a2 45 32 0c b4 98 2b db 6c 8b 97 ea aa 9d 83 a5 c0 0c 0a 00 e8 6b 6e 07 af c0 ad 09 c6 11 b6 0c 2c 7f 0e 9b 65 8d da 3f 91 ec e3 9e 3e 0c 6c 14 2e 2f 3f 67 ff 67 08 5a 35 d0 e0 0c e6 cb 1e d9 c6 23 4f da a9 dd 06 1a 8c 0c 40 98 80 8b ee 06 6b f3 9b c5 16 8a 5e 0c 06 42 4b f1 e7 9b 15 30 af 58 92 2a cc 0c d8 50 f7 bb e9 98 e4 dd aa 68 b8 06 92 0c 84 00 1e db d9 e6 7e 55 96 e9 ba d3 c6 0c 07 42 0a db 7b ad 24 c1 53 62 01 bd 5e 0c 05 e4 3c fb 47 d2 4f 8f a6 8b 8f 52 48 0c 08 98 92 bb c5 a4 be 62 a3 5c 16 62 d4 0c 00 98 fb db 7f 16 ef 69 8b c9 60 0d ba 0c c4 e4 84 5f 5a 54 6e 4b b5 97 f0 48 82 0c 22 98 da db fd 3a 5c d2 77 e2 82 e2 18 0c 72 78 1a ad fd a5 9e d6 aa 3a 55 5b 70 0c 2c ab 26 db f4 6e 39 a3 85 a6 2a b6 d6 0c c4 ab 1c f7 76 e8 43 7b ad cb 4e 01 9e 0c 40 8a 0f f7 56 49 d5 05 dc 8f 01 c4 90 0c 29 ca 15 db ed 4e e3 dc b5 a6 f6 e2 d6 0c 4b c7 1f c3 6d 4e d8 85 ab a0 5f 91 34 0c f3 fa 95 c8 ea 55 b6 de 4b d9 b8 2d 6a 0c ec 40 19 c7 17 97 c5 af 1d 50 d4 da 86 0c f3 36 09 cb 60 f7 c5 61 1d bd 02 0b 22 0c 76 64 77 7f 30 95 24 e1 ba 70 61 2e 9a 0c 2c ec 23 da e2 2a 4b af 09 63 41 61 34 0c 49 fa 35 5b 2f 97 7d 7e c3 88 43 d9 ac 0c 0e ec e9 df e2 9c 4a e0 29 0e cd 4f f0 0c 72 e0 2d cd a1 53 92 e2 ae 35 b7 0a ca 0c 80 e0 2b 26 1d 4b 2f 3e 8c 13 91 7d b4 0c b9 64 25 20 34 b3 5b 66 40 dd 85 e2 2c 0c e6 e0 27 24 89 83 1a e8 75 94 80 36 06 0c e6 fa 2b c0 17 63 36 6d 18 1f 3e 9b 42 0c 80 0f 37 07 18 79 c9 68 f4 90 45 01 bc 0c 58 fa e6 c3 64 ce cf bd 83 22 56 c0 ac 0c 40 48 3c c1 e6 ef 00 db e1 4c 96 1a 40 0c 0b bd 31 cf 64 12 b5 cf 4d 5c ee 97 92 0c 62 36 2a db 43 b7 f6 b9 52 6f 62 13 c8 0c 00 0f 1e d3 6f 24 ba 3c ba 1a bc d1 1c 0c c4 67 99 df 3b 95 d6 f5 45 a3 29 32 24 0c 00 3b 05 dd ff 21 68 d2 07 32 1a 62 2c 0c 62 c8 e0 9f eb 34 5b 9d 81 7f e5 2f e4 0c 2c 42 33 f3 c3 1a 65 f8 96 0a e9 71 6e 0c 98 c8 3e db f6 5e 52 c7 8d 73 f0 91 ae 0c b4 e4 a4 9b ce de 55 f2 87 94 75 d0 da 0c 49 50 d3 df db 14 47 d2 78 ae 3c e8 4e 0c 40 67 cc 97 63 df 99 5e 7f 5c d1 4a 0a 0c c4 28 43 f1 eb 35 c9 b6 6f 6b 60 c9 ec 0c c4 ec a6 9f e9 a0 df 65 81 b0 40 a6 ae 0c c4 98 3d db fc f0 96 57 4d 23 57 58 a2 0c c0 36 a5 ce 6f 53 ae 6b bb 4c 84 d1 2a 0c 00 cc 24 df e9 d0 9f e7 ac 9d c8 2a 16 0c b5 28 aa ff 72 a0 87 f4 79 c4 85 06 f8 0c 08 98 95 75 ef 45 27 30 7e d2 3d 7d 14 0c 40 42 30 fb 4f aa 55 b7 92 8b ac c1 48 0c 05 ec 26 d2 4f 25 a9 f3 87 06 ae b0 0c 0c e6 28 ea af ef 2c 04 3e be 15 9a 05 ee 0c dc 42 ab fa 47 12 56 fb 5a 9f 13 c1 f0 0c c0 79 9f f3 47 5a 04 b5 87 f5 de 01 44 0c 76 0f 3a d7 4b 1c df 1a a7 08 8c 94 b6 0c 65 2e 13 80 f3 22 55 cf 8d 57 47 7f 66 0c 0d 5f 15 61 af f6 d7 be ca 5c 25 48 92 0c 05 ce 1b 08 89 c8 ee df 91 32 f0 18 4a 0c 6b a7 1f 04 8d 85 f3 42 eb 30 25 90 58 0c e6 50 25 20 0f 7b 19 cb d3 2a 8d c1 30 0c 80 5f 27 d8 e0 78 28 2a cb b6 91 41 b2 0c 80 0f 3b 27 6c 7e 90 1a
@@ -49,7 +51,10 @@ def prepare_audio_data():
         # audio_content = audio_content+' '+ data  就会报错
     return  audio_content
 
-data_audio = prepare_audio_data()
+# data_audio = prepare_audio_data()
+
+data_0d0a = '78 78 22 22 12 0a 0d 0a 07 2a c6 03 57 88 a8 0d 07 26 f0 05 14 1f 01 cc 00 18 79 00 88 57 00 0c 00 00 95 f3 63 0d 0a'
+data_33 ='79 79 00 b9 21 00 00 11 99 01 42 61 74 74 65 72 79 3a 34 2e 32 33 56 2c 4e 4f 52 4d 41 4c 3b 20 47 50 52 53 3a 4c 69 6e 6b 20 55 70 20 47 53 4d 20 53 69 67 6e 61 6c 20 4c 65 76 65 6c 3a 53 74 72 6f 6e 67 3b 20 47 50 53 3a 53 75 63 63 65 73 73 66 75 6c 20 70 6f 73 69 74 69 6f 6e 69 6e 67 3b 20 53 56 53 20 55 73 65 64 20 69 6e 20 66 69 78 3a 37 28 31 34 29 3b 20 2c 20 47 50 53 20 53 69 67 6e 61 6c 20 4c 65 76 65 6c 3a 32 30 2c 32 30 2c 32 33 2c 32 33 2c 32 37 2c 32 38 2c 31 39 2c 32 32 20 41 43 43 3a 4f 4e 3b 20 44 65 66 65 6e 73 65 3a 4f 46 46 3b 20 03 d9 bc fc 0d 0a'
 
 test_items =[
     # data_login_req,
@@ -61,15 +66,16 @@ test_items =[
     # data_adjust_time,
     # data_generic_message,
     # data_command_response
-    # data_wifi,
-    data_audio
+    data_wifi,
+    # data_audio
 
 ]
 
 
 # print MessageLogin.__name__
 
-
+def parse_wifi(message):
+    print message.wifi_data
 
 def test_main():
     for data in test_items:
@@ -84,6 +90,8 @@ def test_main():
         audio_data = ''
         for msg in messages:
             print msg.dict()
+            if isinstance(msg,MessageWifiExtension):
+                parse_wifi(msg)
             if isinstance(msg,MessageAudioData):
                 if msg.offset == 0:
                     total_size = msg.total_size
@@ -121,3 +129,26 @@ def test_main():
 
 """
 test_main()
+
+
+"""
+
+data_wifi = ' 78 78 56 2c 12 09 1c 02 02 36 01 cc 00 18 0b 00 67 0e 34 18 0b 00 67 37 2b 18 0b 00 66 c4 24 18 0d 00 66 56 1a 18 b9 00 67 b4 16 18 0b 00 66 9d 16 00 00 00 00 00 00 ff 04 ec 6c 9f aa 1a de 26 ec 6c 9f 9b ba fb 2d a0 a3 3b a3 3d 80 45 50 fa 84 78 b3 62 55 00 af 4b eb 0d 0a'
+[{'signal': 236, 'mac': '6c:9f:aa:1a:de:26'}, {'signal': 236, 'mac': '6c:9f:9b:ba:fb:2d'}, {'signal': 160, 'mac': 'a3:3b:a3:3d:80:45'}, {'signal': 80, 'mac': 'fa:84:78:b3:62:55'}]
+
+包类型：WIFI(2C)
+   CRC：CRC正确，4BEB
+   包长度  =86(56)
+   18年9月28日2:2:54(12091C020236)
+   MCC:460(01CC)    MNC:0(00)    LAC:6155(180B)    CELL_ID:26382(00670E)    RSSI:52(34)
+   LAC1:6155(180B)    CELL_ID1:26423(006737)    RSSI1:43(2B)     LAC2:6155(180B)    CELL_ID2:26308(0066C4)    RSSI2:36(24)     
+   LAC3:6157(180D)    CELL_ID3:26198(006656)    RSSI3:26(1A)     LAC4:6329(18B9)    CELL_ID4:26548(0067B4)    RSSI4:22(16)     
+   LAC5:6155(180B)    CELL_ID5:26269(00669D)    RSSI5:22(16)     LAC6:0(0000)    CELL_ID6:0(000000)    RSSI6:0(00)     
+   TA（时间提前量）:255(FF) 
+   WIFI 数量: 4
+   WIFI1 MAC: EC-6C-9F-AA-1A-DE  信号强度: 38(26)
+   WIFI2 MAC: EC-6C-9F-9B-BA-FB  信号强度: 45(2D)
+   WIFI3 MAC: A0-A3-3B-A3-3D-80  信号强度: 69(45)
+   WIFI4 MAC: 50-FA-84-78-B3-62  信号强度: 85(55)    序列号:175(00AF)
+   
+"""

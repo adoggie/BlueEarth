@@ -75,23 +75,29 @@ class DataAdapter(concox.DataAdapter):
         if isinstance(message, MessageWifiExtension):
             pos.position_source = PositionSource.WIFI
             pos.timestamp = str_to_timestamp(message.ymdhms)
-            self.convertLbsLocation(pos)
+            self.convertWifiLocation(pos,message)
+            if pos.lat == 0:
+                self.convertLbsLocation(pos)
 
-    # def convertWifiLocation(self,pos):
-    #     """lbs: MessageLbsStationExtension
-    #         查询pos
-    #         lbs_cell 表务必要建索引:
-    #         use constant_reference
-    #         db.lbs_cell.createIndex({'mcc':1,'mnc':1,'lac':1,'cell':1});
-    #     """
-    #     from mantis.BlueEarth.tools.lbs import gd_convert_lbs_location
-    #
-    #     ak = self.service.getConfig().get('lbs_ak')
-    #     imei = self.device_id
-    #     bts = (pos.mcc,pos.mnc,pos.lac,pos.cell_id,pos.signal)
-    #     try:
-    #         data = gd_convert_lbs_location(ak,imei,bts)
-    #         object_assign(pos,data)
-    #         pos.position_source = PositionSource.LBS
-    #     except:
-    #         self.logger.error('lbs query fail.' )
+    def convertWifiLocation(self,pos,message):
+        """lbs: MessageLbsStationExtension
+            查询pos
+            lbs_cell 表务必要建索引:
+            use constant_reference
+            db.lbs_cell.createIndex({'mcc':1,'mnc':1,'lac':1,'cell':1});
+        """
+        from mantis.BlueEarth.tools.lbs import gd_convert_wifi_location
+        import traceback
+
+        ak = self.service.getConfig().get('lbs_ak')
+        imei = self.device_id
+        # bts = (pos.mcc,pos.mnc,pos.lac,pos.cell_id,pos.signal)
+        macs = map(lambda wifi: (wifi['mac'],wifi['signal']),message.wifi_data)
+        try:
+            data = gd_convert_wifi_location(ak,imei,macs,debug=instance.getLogger().debug)
+            object_assign(pos,data)
+
+            # pos.position_source = PositionSource.LBS
+        except:
+            traceback.print_exc()
+            self.logger.error('wifi query fail.' )

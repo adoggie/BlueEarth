@@ -41,6 +41,7 @@ class DataAdapter(object):
         self.queue = Queue()
         self.running = True
         self.peer_address = ''
+        self.last_heartbeat = 0
 
     def next_packet_sequence(self):
         self.packet_sequence+=1
@@ -61,8 +62,13 @@ class DataAdapter(object):
         if message isinstance MessageLogin:
             self.conn.client_id.unique_id = message.imei
         """
-        self.logger.debug( str( message.__class__ ))
-        self.logger.debug('message type:0x{:02x}'.format(message.Type.value))
+        # self.logger.debug( str( message.__class__ ))
+        self.logger.debug('{} conn:{}'.format(str(self),str(self.conn)))
+        self.logger.debug(message.__class__.__name__+' device_type:{} device_id:{} message type:0x{:02x} '.format(self.device_type,self.device_id,message.Type.value))
+        self.logger.debug(
+            message.__class__.__name__ + ' device_type:{} device_id:{} content: {} '.format(self.device_type,
+                                                                                                      self.device_id,
+                                                                                                      message.dict()))
         if not self.active:
             if isinstance(message, MessageLogin):
                 self.device_id = message.device_id
@@ -70,7 +76,9 @@ class DataAdapter(object):
                 self.conn.sendData(bytes)
                 self.onActive()
             else:
-                return
+                self.logger.error('first message is not MessageLogin, destroy socket connection.')
+                self.close()
+                # return
 
         message.device_id = self.device_id
         message.device_type = self.device_type
@@ -78,6 +86,7 @@ class DataAdapter(object):
         self.distribute_message(message)
 
         if isinstance(message,MessageHeartBeat):
+            self.last_heartbeat = timestamp_current()
             self.handle_heartbeat(message)
         if isinstance(message,MessageAdjustTime):
             bytes = message.response()
@@ -124,15 +133,14 @@ class DataAdapter(object):
         """处理gps报警"""
         alarm = model.AlarmData()
         alarm.alarm_source_type = AlarmSourceType.GPS_ALARM
-        pos = model.Position()
-        pos.report_time = timestamp_current()
+
+        pos = self.make_position()
         pos.timestamp = str_to_timestamp(message.location.ymdhms)
+        object_assign(pos, message.dict())
         if message.location.located =='y':
             # 设备gps已定位
-            object_assign(pos,message.location.dict())
             pos.position_source = PositionSource.GPS
         else: # 从lbs中判别坐标
-            object_assign(pos,message.location_ext.dict())
             pos.position_source = PositionSource.LBS
             self.convertLbsLocation(pos)
         self.savePosition(pos)
@@ -150,8 +158,7 @@ class DataAdapter(object):
         alarm.alarm_source_type = AlarmSourceType.LBS_ALARM
         alarm.alarm_name = AlarmType.get_name(message.location_ext.alarm)
 
-        pos = model.Position()
-        pos.report_time = timestamp_current()
+        pos = self.make_position()
         pos.timestamp = timestamp_current() # str_to_timestamp(message.location.ymdhms)
 
         object_assign(pos,message.location_ext.dict())
@@ -172,7 +179,7 @@ class DataAdapter(object):
         if pos.lon and pos.lat:
             self.processPosition(pos)
             pos.save()  # insert database
-
+            self.logger.debug('{} {} position content: {}'.format(self.device_type,self.device_id,pos.dict() ))
             # 更新设备最新的状态和位置信息到Redis
             data = hash_object(pos, excludes=('_id',))
             self.update_device_in_cache(data)
@@ -193,11 +200,27 @@ class DataAdapter(object):
         data = message.dict()
         self.update_device_in_cache(data)
 
+    def make_position(self):
+        pos = model.Position()
+        name = DevicePositionLastest.format(device_id=self.device_id)
+        data = self.redis.hgetall(name)
+        # if data:
+        #     object_assign(pos,data)
+        pos.device_id = self.device_id
+        pos.device_type = self.device_type
+        pos.report_time = timestamp_current()
+
+        # 取出当前的信号值、电压值
+        if data:
+            pos.gsm = data.get('gsm', 0)
+            pos.voltage = data.get('voltage', 0)
+        return pos
+
     def handle_location(self,message):
         """处理Gps/Lbs定位信息
         """
-        pos = model.Position()
-        pos.report_time = timestamp_current()
+        pos = self.make_position()
+
         data = message.dict()
         object_assign(pos, data)
 
@@ -265,13 +288,74 @@ class DataAdapter(object):
 
         ak = self.service.getConfig().get('lbs_ak')
         imei = self.device_id
-        bts = (pos.mcc,pos.mnc,pos.lac,pos.cell_id,pos.signal)
+        # bts = (pos.mcc,pos.mnc,pos.lac,pos.cell_id,pos.signal)
+        bts = self.makeLbsBts(pos)
+        bts = bts[:1]
         try:
-            data = gd_convert_lbs_location(ak,imei,bts)
+            data = gd_convert_lbs_location(ak,imei,bts,debug=instance.getLogger().debug)
             object_assign(pos,data)
             pos.position_source = PositionSource.LBS
         except:
             self.logger.error('lbs query fail.' )
+
+    def convertSignalValue(self,value):
+        # (如获得信号强度为正数，则请按照以下公式进行转 换:获得的正信号强度 * 2 – 113)
+        # return value
+        if value > 0:
+            value  = value*2 - 133
+        return value
+
+    def makeLbsBts(self,pos):
+        result = []
+        message = pos
+        mcc = message.mcc
+        mnc = message.mnc
+
+
+
+        rssi = self.convertSignalValue(message.rssi)
+        bts = [mcc,mnc,message.lac,message.cell_id,rssi]
+        result.append(bts)
+
+        main = bts
+
+        if message.lac1:
+            rssi = self.convertSignalValue(message.rssi1)
+            bts = [mcc, mnc, message.lac1, message.ci1, rssi]
+            result.append(bts)
+            # if rssi > main[4]: main= bts
+
+        if message.lac2:
+            rssi = self.convertSignalValue(message.rssi2)
+            bts = [mcc, mnc, message.lac2, message.ci2, rssi]
+            result.append(bts)
+            # if rssi > main[4]: main = bts
+
+        if message.lac3:
+            rssi = self.convertSignalValue(message.rssi3)
+            bts = [mcc, mnc, message.lac3, message.ci3, rssi]
+            result.append(bts)
+            # if rssi > main[4]: main = bts
+
+        if message.lac4:
+            rssi = self.convertSignalValue(message.rssi4)
+            bts = [mcc, mnc, message.lac4, message.ci4, rssi]
+            result.append(bts)
+            # if rssi > main[4]: main = bts
+
+        if message.lac5:
+            rssi = self.convertSignalValue(message.rssi5)
+            bts = [mcc, mnc, message.lac5, message.ci5, rssi]
+            result.append(bts)
+            # if rssi > main[4]: main = bts
+
+        if message.lac6:
+            rssi = self.convertSignalValue(message.rssi6)
+            bts = [mcc, mnc, message.lac6, message.ci6, rssi]
+            result.append(bts)
+            # if rssi > main[4]: main = bts
+        return result
+
 
 
     def processPosition(self,pos):
@@ -328,13 +412,16 @@ class DataAdapter(object):
         self.conn = sock_conn
 
     def close(self):
-        pass
+        self.running = False
+        if self.conn:
+            self.conn.close()
 
     def onConnected(self,sock_con,address,*args):
         """连接上来"""
-        self.logger.debug('device connected . {}'.format(str(args)))
+        self.logger.debug('device connected .  {}'.format(str(address)))
         self.setConnection(sock_con)
         self.peer_address = address # 连接上来的对方地址
+        self.last_heartbeat = timestamp_current()
 
         # self.make_rawfile()
 
@@ -346,11 +433,14 @@ class DataAdapter(object):
         self.raw_file = open(name,'w')
 
     def onDisconnected(self):
-        self.logger.debug('device  disconnected. {}'.format(self.device_id))
+        self.logger.debug('device  disconnected. {} {}'.format(self.device_type,self.device_id))
         self.active = False
         # self.raw_file.close()
         self.service.deviceOffline(self)
         self.running = False
+
+        # 断开连接删除设备与接入服务器的映射
+        self.redis.delete(DeviceLandingServerKey.format(self.device_id))
 
     def hex_dump(self,bytes):
         dump = ' '.join(map(lambda _:'%02x'%_, map(ord, bytes)))
@@ -370,7 +460,7 @@ class DataAdapter(object):
 
     def onData(self,bytes):
         """ raw data """
-        self.logger.debug("device data retrieve in .")
+        self.logger.debug("device data retrieve in . {} {}".format(self.device_id,self.device_type))
         dump = self.hex_dump(bytes)
         self.logger.debug("<< "+dump)
 
@@ -380,13 +470,20 @@ class DataAdapter(object):
         messages = self.accumulator.enqueue(bytes)
         for message in messages:
             # self.handle(message)
-            self.queue.put(message)
+            self.queue.put([message,current_datetime_string()])
 
     def onActive(self):
         """设备在线登录了"""
+        self.logger.debug('device onActive. {} {}'.format(self.device_type, self.device_id))
+
         self.active = True
         # 启动命令发送任务，读取下发命令
         gevent.spawn(self.commandTask)
+
+
+        access_url = self.service.getConfig().get('access_command_url')
+        self.redis.set(DeviceLandingServerKey.format(self.device_id),access_url)
+
 
         self.redis.hset(DeviceActiveListKeyHash,self.device_id,timestamp_current())
         obj = model.Device.get(device_id = self.device_id)
@@ -394,11 +491,11 @@ class DataAdapter(object):
             self.obj = obj
         else:
             self.logger.debug('device: {} not found in database.'.format(self.device_id))
-            self.obj = model.Device()
-            self.obj.device_id = self.device_id
-            self.obj.name = self.device_id
-            self.obj.device_type = self.device_type
-            self.obj.save()
+            # self.obj = model.Device()
+            # self.obj.device_id = self.device_id
+            # self.obj.name = self.device_id
+            # self.obj.device_type = self.device_type
+            # self.obj.save()
 
         self.service.deviceOnline(self)
 
@@ -415,7 +512,7 @@ class DataAdapter(object):
         self.device_app_pub_channel.open()
 
         # 查询一次设备运行配置信息
-        self.queryDeviceConfig()
+        # self.queryDeviceConfig()
 
     def queryDeviceConfig(self):
         """一次查询设备所有运行配置参数"""
@@ -433,35 +530,81 @@ class DataAdapter(object):
                 key,content = data
                 if not content:
                     continue
-                content = self.command_controller.execute(content)
-                if not content:
-                    continue
 
-                self.logger.debug('SendCommand: {}'.format(content))
-                command = MessageOnlineCommand()
-                command.content = content
-                command.sequence = self.seq_gen.next_id()
-                packet = command.packet()
-                packet.sequence = self.next_packet_sequence()
-                self.conn.sendData(packet.to_bytes())
+                if not self.sendCommand(content):
+                    break
 
-                # save send record
-                send = model.CommandSend()
-                send.device_id = self.device_id
-                send.send_time = timestamp_current()
-                send.sequence = packet.sequence
-                send.command = command.content
-                send.save()
+                # content = self.command_controller.execute(content)
+                # if not content:
+                #     continue
+                #
+                # self.logger.debug('SendCommand: {} {} {}'.format(content,self.device_id,self.device_type))
+                # command = MessageOnlineCommand()
+                # command.content = content
+                # command.sequence = self.seq_gen.next_id()
+                # packet = command.packet()
+                # packet.sequence = self.next_packet_sequence()
+                # self.conn.sendData(packet.to_bytes())
+                #
+                # # save send record
+                # send = model.CommandSend()
+                # send.device_id = self.device_id
+                # send.send_time = timestamp_current()
+                # send.sequence = packet.sequence
+                # send.command = command.content
+                # send.save()
+        self.logger.debug('commandTask Exiting.. {} {}'.format(self.device_type, self.device_id))
+
+    def sendCommand(self,command):
+
+        content = command
+        content = self.command_controller.execute(content)
+        if not content:
+            return True
+
+        self.logger.debug('SendCommand: {} {} {}'.format(content,self.device_id,self.device_type))
+        command = MessageOnlineCommand()
+        command.content = content
+        command.sequence = self.seq_gen.next_id()
+        packet = command.packet()
+        packet.sequence = self.next_packet_sequence()
+        try:
+            self.conn.sendData(packet.to_bytes())
+        except:
+            self.logger.error('socket sendData error. {} {} {}'.format(content,self.device_id,self.device_type))
+            self.close()
+            return False
+        # save send record
+        send = model.CommandSend()
+        send.device_id = self.device_id
+        send.send_time = timestamp_current()
+        send.sequence = packet.sequence
+        send.command = command.content
+        send.save()
+        return True
+        # self.logger.debug('commandTask Exiting.. {} {}'.format(self.device_type, self.device_id))
+
 
     def messageTask(self):
         import traceback
+
         while self.running:
+            # 长久没有心跳包
+            if timestamp_current() - self.last_heartbeat > MaxLiveTimeDeviceLandingServerKey:
+                self.logger.warn('device heartbeat timer reached limit. close socket. {} {} '.format(self.device_id, self.device_type))
+                self.close()
+                break
             try:
-                message = self.queue.get(block=True, timeout=1)
+                message,date = self.queue.get(block=True, timeout=1)
                 try:
+                    self.logger.debug('message pop from queue: {} {}  {} {}'.format(date,message.__class__.__name__,self.device_id,self.device_type))
                     self.handle(message)
-                except: traceback.print_exc()
+                except:
+                    self.logger.warn(traceback.print_exc())
             except:pass
+
+        self.logger.warn('messageTask() exiting.. {} {} '.format(self.device_id, self.device_type))
+
 
 
 

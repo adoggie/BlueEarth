@@ -10,5 +10,12 @@ def get_database():
 
 model.get_database = get_database
 
-device = model.Device.create(device_id='868120201788186',device_type='gt03',name='测试机器-1')
-device.save()
+def init_test_device():
+    device = model.Device.create(device_id='868120201788186',device_type='gt03',name= u'老公的车').save()
+    device = model.Device.create(device_id='868120205647263',device_type='ev25',name= u'张师傅').save()
+    device = model.Device.create(device_id='868120191087078',device_type='gt310',name= u'Eric.son').save()
+
+device = model.Device.create(device_id='868120200177639',device_type='gt03',name= u'设备1').save()
+
+
+

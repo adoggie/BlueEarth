@@ -76,6 +76,7 @@ class AuthToken(object):
         self.user_name = ''
         self.platform = ''
         self.role = ''
+        self.open_id =''
 
     def encode(self):
         return token_encode(self)
